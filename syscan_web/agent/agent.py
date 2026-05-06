@@ -11,7 +11,12 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import socketio
+try:
+    import socketio
+except ImportError:
+    print("ERROR: socketio-client not installed. Run: pip install socketio-client")
+    sys.exit(1)
+
 from syscan_web.agent.scanner import GridScanner
 from syscan_web.agent.deleter import FileDeleter
 from syscan_web.agent.analyzer import FileAnalyzer
@@ -123,7 +128,7 @@ class SysScanAgent:
                 if method == 'recycle':
                     success = self.deleter.send_to_recycle_bin(path)
                 else:
-                    success, _ = self.deleter.delete_permanent(path)
+                    success, _ = self.deleter.delete_item(path, method)
                     success = success
                 
                 results.append({'path': path, 'success': success})
@@ -158,7 +163,7 @@ class SysScanAgent:
     def check_for_update(self):
         """Check if newer version is available."""
         try:
-            from agent.updater import AgentUpdater
+            from syscan_web.agent.updater import AgentUpdater
             updater = AgentUpdater(current_version=self.current_version)
             latest = updater.check_for_update()
             
