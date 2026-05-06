@@ -20,8 +20,13 @@ def create_app(config_name=None, serve_ui=True):
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY', 'dev-key-change-in-prod'),
         API_PREFIX='/api',
-        DEBUG=True
+        DEBUG=True,
+        JWT_SECRET_KEY=os.environ.get('JWT_SECRET', 'jwt-secret-change-in-prod')
     )
+    
+    # Import limiter after app creation to avoid circular imports
+    from .api import limiter
+    limiter.init_app(app)
     
     # Register blueprints
     register_blueprints(app)
@@ -61,6 +66,8 @@ def register_blueprints(app):
     """Register all blueprints with the app."""
     from .api import api_bp
     from .websocket import ws_bp
+    from .auth import create_auth_blueprint
     
     app.register_blueprint(api_bp)
     app.register_blueprint(ws_bp)
+    app.register_blueprint(create_auth_blueprint())
