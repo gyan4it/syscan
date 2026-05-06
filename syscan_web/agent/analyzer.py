@@ -6,6 +6,10 @@ Handles registry leftovers scanning and file analysis.
 import os
 import subprocess
 
+# Import constants
+from syscan_web.common.constants import REGISTRY_PATHS
+
+# Registry scan PowerShell script
 PS_REGISTRY_LEFTOVERS = """
 $regPaths = @(
     'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
@@ -44,10 +48,20 @@ $leftovers | Sort-Object -Unique | ForEach-Object {{ Write-Output $_ }}
 """
 
 class FileAnalyzer:
-    """Analyzes found items and scans for registry leftovers."""
-
+    """
+    Analyzes found items and scans for registry leftovers.
+    
+    Provides methods to analyze scan results and scan Windows registry
+    for program leftovers (uninstalled programs with remaining folders).
+    """
+    
     def scan_registry_leftovers(self):
-        """Scan Windows registry for program leftovers (uninstalled but still have folders)."""
+        """
+        Scan Windows registry for program leftovers.
+        
+        Returns:
+            List of tuples (path, size) for leftover folders
+        """
         try:
             result = subprocess.run(
                 ['powershell', '-Command', PS_REGISTRY_LEFTOVERS],
@@ -65,9 +79,17 @@ class FileAnalyzer:
         except Exception as e:
             print(f'\nError scanning registry: {e}')
             return []
-
+    
     def _get_size(self, path):
-        """Calculate total size of a path."""
+        """
+        Calculate total size of a path.
+        
+        Args:
+            path: File or directory path
+            
+        Returns:
+            Total size in bytes
+        """
         total = 0
         try:
             if os.path.isfile(path):
@@ -81,9 +103,17 @@ class FileAnalyzer:
         except:
             pass
         return total
-
+    
     def analyze_items(self, items):
-        """Analyze scanned items and return summary."""
+        """
+        Analyze scanned items and return summary.
+        
+        Args:
+            items: List of (path, size) tuples
+            
+        Returns:
+            Dictionary with analysis results
+        """
         if not items:
             return {
                 'total_items': 0,
@@ -91,19 +121,19 @@ class FileAnalyzer:
                 'largest_item': None,
                 'categories': {}
             }
-
+        
         total_size = sum(size for _, size in items)
         total_size_gb = total_size / (1024**3)
-
+        
         # Find largest item
         largest = max(items, key=lambda x: x[1])
-
+        
         # Categorize by parent directory
         categories = {}
         for path, size in items:
             parent = os.path.dirname(path)
             categories[parent] = categories.get(parent, 0) + size
-
+        
         return {
             'total_items': len(items),
             'total_size_gb': round(total_size_gb, 2),

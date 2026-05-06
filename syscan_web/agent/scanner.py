@@ -10,8 +10,20 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Event
 
+# Import constants from common module
+from syscan_web.common.constants import DEFAULT_EXCLUDES, SPECIFIC_PATHS, MIN_SIZE_BYTES
+
 def is_excluded(path, exclude_patterns):
-    """Check if path matches any exclusion pattern (supports * wildcard)"""
+    """
+    Check if path matches any exclusion pattern (supports * wildcard).
+    
+    Args:
+        path: Path to check
+        exclude_patterns: List of patterns with wildcards
+        
+    Returns:
+        True if path matches any exclusion pattern
+    """
     import fnmatch
     path_normalized = path.replace('\\', '/')
     for pattern in exclude_patterns:
@@ -21,38 +33,25 @@ def is_excluded(path, exclude_patterns):
     return False
 
 class GridScanner:
-    """Grid-based parallel scanner optimized for Windows systems."""
-
-    # Default exclusion patterns (wildcards supported with *)
-    DEFAULT_EXCLUDES = [
-        'C:/Users/*/Documents',
-        'C:/Users/*/Pictures',
-        'C:/Users/*/Videos',
-        'C:/Users/*/Music',
-        'C:/Users/*/Desktop',
-        'C:/Windows',
-        'C:/ProgramData',
-        'C:/Program Files',
-        'C:/Program Files (x86)',
-        'C:/Users/All Users',
-        'C:/Users/Default',
-        'C:/Users/Default User',
-        'C:/Users/Public'
-    ]
-
-    # Specific paths to scan (in addition to C:/)
-    SPECIFIC_PATHS = [
-        os.path.expandvars(r'%APPDATA%\Apple Computer\MobileSync\Backup'),
-        os.path.expandvars(r'%USERPROFILE%\.local\share\opencode\log'),
-        os.path.expandvars(r'%LOCALAPPDATA%\npm-cache'),
-        os.path.expandvars(r'%TEMP%'),
-        os.path.expandvars(r'%LOCALAPPDATA%\Temp'),
-        os.path.expandvars(r'%USERPROFILE%\AppData\Local\Docker'),
-        os.path.expandvars(r'%USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default\Cache'),
-        os.path.expandvars(r'%USERPROFILE%\AppData\Local\Microsoft\Edge\User Data\Default\Cache')
-    ]
+    """
+    Grid-based parallel scanner optimized for Windows systems.
+    
+    Uses a grid-based approach where each top-level directory is a "cell"
+    scanned in parallel using ThreadPoolExecutor.
+    """
+    
+    # Use constants from common module instead of duplicating
+    DEFAULT_EXCLUDES = DEFAULT_EXCLUDES
+    SPECIFIC_PATHS = SPECIFIC_PATHS
 
     def __init__(self, excludes=None, specific_paths=None):
+        """
+        Initialize GridScanner.
+        
+        Args:
+            excludes: Optional custom exclusion patterns (defaults to DEFAULT_EXCLUDES)
+            specific_paths: Optional custom paths to scan (defaults to SPECIFIC_PATHS)
+        """
         self.excludes = excludes if excludes else self.DEFAULT_EXCLUDES
         self.specific_paths = specific_paths if specific_paths else self.SPECIFIC_PATHS
         self.found_items = []
@@ -65,7 +64,12 @@ class GridScanner:
     def get_size_fast(self, path):
         """
         Fast size calculation using os.scandir.
-        Returns (total_size, error_count) tuple.
+        
+        Args:
+            path: Directory path to calculate size for
+            
+        Returns:
+            Tuple of (total_size, error_count)
         """
         total = 0
         error_count = 0
@@ -86,10 +90,18 @@ class GridScanner:
         if error_count > 0:
             self.scan_errors.append((path, error_count))
         
-        return total, error_count  # FIX 1: Return tuple with error info
+        return total, error_count
 
     def process_item(self, item_path):
-        """Process a single item - check size and return if >1GB"""
+        """
+        Process a single item - check size and return if >1GB.
+        
+        Args:
+            item_path: Path to process
+            
+        Returns:
+            Tuple (path, size) if size >1GB, None otherwise
+        """
         try:
             if is_excluded(item_path, self.excludes):
                 return None
@@ -97,14 +109,19 @@ class GridScanner:
                 size, errors = self.get_size_fast(item_path)
             else:
                 size = os.path.getsize(item_path)
-            if size > 1024**3:  # >1GB
+            if size > MIN_SIZE_BYTES:  # >1GB
                 return (item_path, size)
-        except (PermissionError, OSError, ValueError) as e:  # FIX 2: Catch specific exceptions only
+        except (PermissionError, OSError, ValueError) as e:
             self.scan_errors.append((item_path, str(e)))
         return None
 
     def collect_grid_cells(self):
-        """Collect all items from scan paths to create grid cells"""
+        """
+        Collect all items from scan paths to create grid cells.
+        
+        Returns:
+            List of paths to scan in parallel
+        """
         cells = []
         scan_paths = ['C:/'] + [p.replace('\\', '/') for p in self.specific_paths if os.path.exists(p)]
         scan_paths_norm = [os.path.normpath(p) for p in scan_paths]
@@ -132,7 +149,12 @@ class GridScanner:
         return cells
 
     def get_optimal_workers(self):
-        """Calculate optimal worker count based on system resources."""
+        """
+        Calculate optimal worker count based on system resources.
+        
+        Returns:
+            Optimal number of worker threads (capped at 256)
+        """
         cpu_count = os.cpu_count() or 4
         try:
             import ctypes
@@ -187,7 +209,15 @@ class GridScanner:
             print(f'\nWarning: {len(self.scan_errors)} errors during scan')
 
     def format_time(self, seconds):
-        """Format seconds into human-readable time."""
+        """
+        Format seconds into human-readable time.
+        
+        Args:
+            seconds: Time in seconds
+            
+        Returns:
+            Formatted string like "5m 30s" or "1h 20m"
+        """
         if seconds < 60:
             return f'{int(seconds)}s'
         elif seconds < 3600:
@@ -196,7 +226,15 @@ class GridScanner:
             return f'{int(seconds / 3600)}h {int((seconds % 3600) / 60)}m'
 
     def scan(self, progress_callback=None):
-        """Main scan method. Returns sorted list of (path, size) tuples."""
+        """
+        Main scan method.
+        
+        Args:
+            progress_callback: Optional callback function(percent, message)
+            
+        Returns:
+            Sorted list of (path, size) tuples
+        """
         self.found_items = []
         self.scan_errors = []
         self.start_time = time.time()

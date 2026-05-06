@@ -8,7 +8,7 @@ import shutil
 import ctypes
 from ctypes import wintypes
 
-# Define SHFILEOPSTRUCT at module level (FIX for efficiency)
+# Define SHFILEOPSTRUCT at module level for efficiency
 class SHFILEOPSTRUCT(ctypes.Structure):
     _fields_ = [
         ('hwnd', wintypes.HWND),
@@ -22,9 +22,14 @@ class SHFILEOPSTRUCT(ctypes.Structure):
     ]
 
 class FileDeleter:
-    """Handles deletion of files and folders."""
-
-    # Constants at class level (FIX: removed typo underscores)
+    """
+    Handles deletion of files and folders.
+    
+    Provides methods to send items to Recycle Bin (restorable)
+    or permanently delete them.
+    """
+    
+    # Windows API constants
     FO_DELETE = 3
     FOF_ALLOWUNDO = 0x40
     FOF_NOCONFIRMATION = 0x10
@@ -32,7 +37,15 @@ class FileDeleter:
 
     @staticmethod
     def send_to_recycle_bin(path):
-        """Send file/folder to Windows Recycle Bin (restorable)."""
+        """
+        Send file/folder to Windows Recycle Bin (restorable).
+        
+        Args:
+            path: Path to send to Recycle Bin
+            
+        Returns:
+            True if successful, False otherwise
+        """
         op = SHFILEOPSTRUCT()
         op.wFunc = FileDeleter.FO_DELETE
         op.pFrom = ctypes.c_wchar_p(path + '\0')
@@ -43,7 +56,15 @@ class FileDeleter:
 
     @staticmethod
     def delete_permanent(path):
-        """Permanently delete file/folder (non-restorable)."""
+        """
+        Permanently delete file/folder (non-restorable).
+        
+        Args:
+            path: Path to delete
+            
+        Returns:
+            Tuple of (success: bool, error_message: str or None)
+        """
         try:
             if os.path.isdir(path):
                 shutil.rmtree(path)
@@ -56,8 +77,13 @@ class FileDeleter:
     def delete_item(self, path, method='recycle'):
         """
         Delete an item.
-        method: 'recycle' (default, restorable) or 'permanent'
-        Returns: (success: bool, message: str)
+        
+        Args:
+            path: Path to delete
+            method: 'recycle' (default, restorable) or 'permanent'
+            
+        Returns:
+            Tuple of (success: bool, message: str)
         """
         if not os.path.exists(path):
             return False, f"Path does not exist: {path}"
@@ -67,7 +93,7 @@ class FileDeleter:
             if self.send_to_recycle_bin(path):
                 return True, 'Successfully sent to Recycle Bin.'
             else:
-                return False, 'Failed to send to Recycle Bin.'  # FIX: Added missing comma
+                return False, 'Failed to send to Recycle Bin.'
         else:
             print(f'Permanently deleting {path}...')
             success, error = self.delete_permanent(path)
@@ -79,8 +105,13 @@ class FileDeleter:
     def delete_multiple(self, items, method='recycle'):
         """
         Delete multiple items.
-        items: list of paths
-        Returns: list of (path, success, message) tuples
+        
+        Args:
+            items: List of paths to delete
+            method: 'recycle' or 'permanent'
+            
+        Returns:
+            List of (path, success, message) tuples
         """
         results = []
         for path in items:
