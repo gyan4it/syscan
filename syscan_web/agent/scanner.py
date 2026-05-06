@@ -60,22 +60,33 @@ class GridScanner:
         self.scan_complete = Event()
         self.current_scan_info = ['']
         self.start_time = None
+        self.scan_errors = []  # Track errors during scan
 
     def get_size_fast(self, path):
-        """Fast size calculation using os.scandir"""
+        """
+        Fast size calculation using os.scandir.
+        Returns (total_size, error_count) tuple.
+        """
         total = 0
+        error_count = 0
         try:
             for entry in os.scandir(path):
                 try:
                     if entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
                     elif entry.is_dir(follow_symlinks=False):
-                        total += self.get_size_fast(entry.path)
+                        size, errors = self.get_size_fast(entry.path)
+                        total += size
+                        error_count += errors
                 except (PermissionError, OSError):
-                    pass
+                    error_count += 1
         except (PermissionError, OSError):
-            pass
-        return total
+            error_count += 1
+        
+        if error_count > 0:
+            self.scan_errors.append((path, error_count))
+        
+        return total, error_count  # FIX 1: Return tuple with error info
 
     def process_item(self, item_path):
         """Process a single item - check size and return if >1GB"""
@@ -83,13 +94,13 @@ class GridScanner:
             if is_excluded(item_path, self.excludes):
                 return None
             if os.path.isdir(item_path):
-                size = self.get_size_fast(item_path)
+                size, errors = self.get_size_fast(item_path)
             else:
                 size = os.path.getsize(item_path)
             if size > 1024**3:  # >1GB
                 return (item_path, size)
-        except:
-            pass
+        except (PermissionError, OSError, ValueError) as e:  # FIX 2: Catch specific exceptions only
+            self.scan_errors.append((item_path, str(e)))
         return None
 
     def collect_grid_cells(self):
@@ -97,6 +108,8 @@ class GridScanner:
         cells = []
         scan_paths = ['C:/'] + [p.replace('\\', '/') for p in self.specific_paths if os.path.exists(p)]
         scan_paths_norm = [os.path.normpath(p) for p in scan_paths]
+
+        current_user = os.environ.get('USERNAME', '')
 
         for path in scan_paths:
             if not os.path.exists(path):
@@ -107,8 +120,8 @@ class GridScanner:
                     # Skip root-level scan folders
                     if item_path in scan_paths_norm:
                         continue
-                    # Skip direct user profile root (hardcoded check from original)
-                    if item_path.lower() == os.path.normpath('C:/Users/Gyan4').lower():
+                    # Skip direct user profile root (dynamic)
+                    if current_user and item_path.lower() == os.path.normpath(f'C:/Users/{current_user}').lower():
                         continue
                     # Check exclusions
                     if is_excluded(item_path, self.excludes):
@@ -167,8 +180,11 @@ class GridScanner:
                         with self.items_lock:
                             count = len(self.found_items)
                         print(f'[{self.format_time(elapsed)}] Progress: {completed[0]}/{total_cells} cells | Found: {count}')
-                except:
-                    pass
+                except Exception as e:
+                    self.scan_errors.append(('future', str(e)))
+
+        if self.scan_errors:
+            print(f'\nWarning: {len(self.scan_errors)} errors during scan')
 
     def format_time(self, seconds):
         """Format seconds into human-readable time."""
@@ -182,6 +198,7 @@ class GridScanner:
     def scan(self, progress_callback=None):
         """Main scan method. Returns sorted list of (path, size) tuples."""
         self.found_items = []
+        self.scan_errors = []
         self.start_time = time.time()
 
         print('Starting scan...')
@@ -190,5 +207,8 @@ class GridScanner:
 
         elapsed = time.time() - self.start_time
         print(f"[{self.format_time(elapsed)}] Scan complete! Total found: {len(self.found_items)}")
+        
+        if self.scan_errors:
+            print(f"Warning: {len(self.scan_errors)} errors occurred during scan")
 
         return sorted(self.found_items, key=lambda x: -x[1])

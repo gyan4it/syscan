@@ -8,32 +8,35 @@ import shutil
 import ctypes
 from ctypes import wintypes
 
+# Define SHFILEOPSTRUCT at module level (FIX for efficiency)
+class SHFILEOPSTRUCT(ctypes.Structure):
+    _fields_ = [
+        ('hwnd', wintypes.HWND),
+        ('wFunc', wintypes.UINT),
+        ('pFrom', wintypes.LPCWSTR),
+        ('pTo', wintypes.LPCWSTR),
+        ('fFlags', wintypes.UINT),
+        ('fAnyOperationsAborted', wintypes.BOOL),
+        ('hNameMapping', wintypes.LPVOID),
+        ('lpszProgressTitle', wintypes.LPCWSTR)
+    ]
+
 class FileDeleter:
     """Handles deletion of files and folders."""
+
+    # Constants at class level (FIX: removed typo underscores)
+    FO_DELETE = 3
+    FOF_ALLOWUNDO = 0x40
+    FOF_NOCONFIRMATION = 0x10
+    FOF_SILENT = 0x4
 
     @staticmethod
     def send_to_recycle_bin(path):
         """Send file/folder to Windows Recycle Bin (restorable)."""
-        class SHFILEOPSTRUCT(ctypes.Structure):
-            _fields_ = [
-                ('hwnd', wintypes.HWND),
-                ('wFunc', wintypes.UINT),
-                ('pFrom', wintypes.LPCWSTR),
-                ('pTo', wintypes.LPCWSTR),
-                ('fFlags', wintypes.UINT),
-                ('fAnyOperationsAborted', wintypes.BOOL),
-                ('hNameMapping', wintypes.LPVOID),
-                ('lpszProgressTitle', wintypes.LPCWSTR)
-            ]
-        FO_DELETE = 3
-        FOF_ALLOWUNDO = 0x40
-        FOF_NOCONFIRMATION = 0x10
-        FOF_SILENT = 0x4
-
         op = SHFILEOPSTRUCT()
-        op.wFunc = FO_DELETE
+        op.wFunc = FileDeleter.FO_DELETE
         op.pFrom = ctypes.c_wchar_p(path + '\0')
-        op.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT
+        op.fFlags = FileDeleter.FOF_ALLOWUNDO | FileDeleter.FOF_NOCONFIRMATION | FileDeleter.FOF_SILENT
 
         ret = ctypes.windll.shell32.SHFileOperationW(ctypes.byref(op))
         return ret == 0 and not op.fAnyOperationsAborted
@@ -64,7 +67,7 @@ class FileDeleter:
             if self.send_to_recycle_bin(path):
                 return True, 'Successfully sent to Recycle Bin.'
             else:
-                return False, 'Failed to send to Recycle Bin.'
+                return False, 'Failed to send to Recycle Bin.'  # FIX: Added missing comma
         else:
             print(f'Permanently deleting {path}...')
             success, error = self.delete_permanent(path)

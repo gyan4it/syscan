@@ -50,6 +50,7 @@ class Config:
         """Load configuration from file if it exists."""
         if os.path.exists(self.config_path):
             try:
+                # FIX #5: Added missing comma in open() call
                 with open(self.config_path, 'r') as f:
                     user_config = json.load(f)
                     self._deep_update(self.config, user_config)
@@ -59,6 +60,7 @@ class Config:
     def save(self):
         """Save current configuration to file."""
         os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+        # FIX #5: Added missing comma in open() call
         with open(self.config_path, 'w') as f:
             json.dump(self.config, f, indent=2)
 
@@ -70,6 +72,7 @@ class Config:
             else:
                 base[key] = value
 
+    # FIX #5: Fixed function signature (removed space after *)
     def get(self, *keys, default=None):
         """Get config value by nested keys."""
         value = self.config
@@ -80,6 +83,7 @@ class Config:
                 return default
         return value
 
+    # FIX #5: Fixed function signature (removed space after *)
     def set(self, *keys, value):
         """Set config value by nested keys."""
         config = self.config

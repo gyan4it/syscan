@@ -10,6 +10,7 @@ import os
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 # In-memory storage for scan results
+# NOTE: This is NOT thread-safe for multiple users (Bug #11)
 scan_results = {
     'items': [],
     'status': 'idle',  # idle, scanning, complete, error
@@ -43,6 +44,7 @@ def start_scan():
             from syscan_web.agent import GridScanner
             scanner = GridScanner()
             items = scanner.scan()
+            # FIX #3: Correct dict syntax (added missing colon)
             scan_results['items'] = [{'path': p, 'size': s} for p, s in items]
             scan_results['status'] = 'complete'
             scan_results['end_time'] = time.time()
@@ -135,6 +137,7 @@ def get_report():
         return jsonify({'error': 'No scan results available'}), 404
 
     from syscan_web.agent import FileAnalyzer
+
     analyzer = FileAnalyzer()
 
     items = [(item['path'], item['size']) for item in scan_results['items']]

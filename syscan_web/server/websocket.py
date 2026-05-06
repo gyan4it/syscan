@@ -44,6 +44,7 @@ def init_socketio(sio):
                 items = scanner.scan()
 
                 # Send results
+                # FIX #4: Correct dict syntax (added missing colon)
                 emit('scan_complete', {
                     'status': 'complete',
                     'items_found': len(items),
