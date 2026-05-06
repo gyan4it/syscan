@@ -4,6 +4,11 @@ PyInstaller spec file for SysScan Agent (Phase 3).
 Creates a standalone Windows .exe (no console).
 """
 
+import sys
+sys.setrecursionlimit(5000)
+
+from PyInstaller.building.build_main import Analysis as ANALYSIS, PYZ, EXE, COLLECT
+
 block_cipher = None
 
 
@@ -35,9 +40,10 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    [],
-    exclude_binaries=True,
-    name='SysScanAgent',
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    name='SysCanAgent',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -48,16 +54,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.ico',  # Optional: Add icon if available
+    # Removed icon='icon.ico' - no icon available
 )
 
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.dat,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='SysScanAgent',
-)
+# No COLLECT needed for single EXE build

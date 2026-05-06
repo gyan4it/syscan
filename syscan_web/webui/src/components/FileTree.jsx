@@ -21,12 +21,18 @@ function FileTree({ files, onSelectionChange }) {
     };
     
     return (
-        <div className="file-tree">
-            <div className="tree-actions">
-                <button onClick={handleSelectAll}>
+        <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+            <div className="flex gap-2 mb-3">
+                <button 
+                    onClick={handleSelectAll}
+                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded border border-gray-300"
+                >
                     ☑️ Select All ({checked.length} selected)
                 </button>
-                <button onClick={() => { setChecked([]); onSelectionChange([]); }}>
+                <button 
+                    onClick={() => { setChecked([]); onSelectionChange([]); }}
+                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded border border-gray-300"
+                >
                     ☐ Clear Selection
                 </button>
             </div>
@@ -82,11 +88,11 @@ function getAllPaths(nodes) {
 
 // Custom icons for tree nodes
 const customIcons = {
-    check: <i className="fas fa-check-square" />,
+    check: <i className="fas fa-check-square text-blue-500" />,
     uncheck: <i className="far fa-square" />,
-    halfCheck: <i className="fas fa-minus-square" />,
-    expand: <i className="fas fa-chevron-right" />,
-    collapse: <i className="fas fa-chevron-down" />
+    halfCheck: <i className="fas fa-minus-square text-blue-400" />,
+    expand: <i className="fas fa-chevron-right text-gray-600" />,
+    collapse: <i className="fas fa-chevron-down text-gray-600" />
 };
 
 export default FileTree;
