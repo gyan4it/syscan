@@ -1,13 +1,26 @@
 """
 Analyzer module for SysCan.
 Handles registry leftovers scanning and file analysis.
+Uses AI Engine for smart deletion recommendations.
 """
 
 import os
 import subprocess
+import sys
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import constants
 from syscan_web.common.constants import REGISTRY_PATHS
+
+# Import AI Engine
+try:
+    from syscan_web.server.ai_engine import get_ai_engine
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
+    print("Warning: AI Engine not available")
 
 # Registry scan PowerShell script
 PS_REGISTRY_LEFTOVERS = """
@@ -144,6 +157,7 @@ class FileAnalyzer:
     def get_recommendation(self, file_path, size_gb):
         """
         Return star rating (1-5) and recommendation for a file.
+        Uses AI Engine if available, otherwise falls back to rule-based.
         
         Args:
             file_path: Path to analyze
@@ -152,6 +166,22 @@ class FileAnalyzer:
         Returns:
             Dictionary with 'stars', 'reason', and 'type' keys
         """
+        # Try AI prediction first
+        if AI_AVAILABLE:
+            try:
+                ai_engine = get_ai_engine()
+                size_bytes = size_gb * (1024**3)
+                recommendation, stars, reason = ai_engine.get_recommendation(file_path, size_bytes)
+                return {
+                    'stars': stars,
+                    'reason': reason,
+                    'type': 'ai_prediction'
+                }
+            except Exception as e:
+                print(f"AI prediction failed: {e}")
+                # Fall through to rule-based
+        
+        # Fallback: Rule-based recommendations
         # npm cache (safe to delete)
         if 'npm-cache' in file_path:
             return {
