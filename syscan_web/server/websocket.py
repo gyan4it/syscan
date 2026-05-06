@@ -33,26 +33,48 @@ def init_socketio(sio):
     @socketio.on('start_scan', namespace='/scan')
     def handle_start_scan():
         """Start a new scan via WebSocket."""
-        emit('scan_status', {'status': 'starting'}, room='scan')
+        emit('scan_started', {'status': 'scanning'}, room='scan')
 
         def do_scan():
             try:
                 from syscan_web.agent import GridScanner
-                scanner = GridScanner()
+                from syscan_web.agent.analyzer import FileAnalyzer
+                
+                # Define progress callback for real-time updates
+                def progress_callback(percent, current_file, found_count):
+                    socketio.emit('scan_progress', {
+                        'percent': percent,
+                        'current_file': current_file,
+                        'found_count': found_count
+                    }, room='scan', namespace='/scan')
 
-                # Start scan
-                items = scanner.scan()
+                # Start scan with progress callback
+                scanner = GridScanner()
+                items = scanner.scan(progress_callback=progress_callback)
+
+                # Analyze items for star ratings
+                analyzer = FileAnalyzer()
+                analyzed_items = []
+                for path, size in items:
+                    recommendation = analyzer.get_recommendation(path, size / (1024**3))
+                    analyzed_items.append({
+                        'path': path,
+                        'size': size,
+                        'size_gb': round(size / (1024**3), 2),
+                        'stars': recommendation['stars'],
+                        'reason': recommendation['reason'],
+                        'type': recommendation['type']
+                    })
 
                 # Send results
-                # FIX #4: Correct dict syntax (added missing colon)
-                emit('scan_complete', {
+                socketio.emit('scan_complete', {
                     'status': 'complete',
                     'items_found': len(items),
-                    'items': [{'path': p, 'size': s} for p, s in items]
-                }, room='scan')
+                    'items': analyzed_items
+                }, room='scan', namespace='/scan')
 
             except Exception as e:
-                emit('scan_error', {'error': str(e)}, room='scan')
+                socketio.emit('scan_error', {'error': str(e)}, room='scan', namespace='/scan')
 
         thread = threading.Thread(target=do_scan, daemon=True)
         thread.start()

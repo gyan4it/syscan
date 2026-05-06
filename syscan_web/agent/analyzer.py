@@ -140,3 +140,75 @@ class FileAnalyzer:
             'largest_item': {'path': largest[0], 'size_gb': round(largest[1] / (1024**3), 2)},
             'categories': {k: round(v / (1024**3), 2) for k, v in categories.items()}
         }
+    
+    def get_recommendation(self, file_path, size_gb):
+        """
+        Return star rating (1-5) and recommendation for a file.
+        
+        Args:
+            file_path: Path to analyze
+            size_gb: Size in GB
+            
+        Returns:
+            Dictionary with 'stars', 'reason', and 'type' keys
+        """
+        # npm cache (safe to delete)
+        if 'npm-cache' in file_path:
+            return {
+                'stars': 5,
+                'reason': 'Safe to delete - can re-download',
+                'type': 'cache'
+            }
+        
+        # iPhone backup (review needed)
+        if 'MobileSync' in file_path:
+            return {
+                'stars': 3,
+                'reason': 'iPhone backup - review if needed',
+                'type': 'backup'
+            }
+        
+        # Log files (safe)
+        if file_path.endswith('.log'):
+            return {
+                'stars': 5,
+                'reason': 'Old log file - safe to delete',
+                'type': 'log'
+            }
+        
+        # System files (never delete)
+        if self._is_system_file(file_path):
+            return {
+                'stars': 0,
+                'reason': 'SYSTEM FILE - DO NOT DELETE',
+                'type': 'system'
+            }
+        
+        # Default (unknown)
+        return {
+            'stars': 2,
+            'reason': 'Unknown file - review before deleting',
+            'type': 'unknown'
+        }
+    
+    def _is_system_file(self, file_path):
+        """
+        Check if file is a system file that should not be deleted.
+        
+        Args:
+            file_path: Path to check
+            
+        Returns:
+            True if system file
+        """
+        system_patterns = [
+            'C:/Windows',
+            'C:/Program Files',
+            'C:/Program Files (x86)',
+            'C:/ProgramData'
+        ]
+        
+        for pattern in system_patterns:
+            if file_path.lower().startswith(pattern.lower()):
+                return True
+        return False

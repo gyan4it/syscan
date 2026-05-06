@@ -60,8 +60,10 @@ def start_scan():
             from syscan_web.agent import GridScanner
             scanner = GridScanner()
             items = scanner.scan()
+            # FIX: Add size_gb field for WebUI
+            formatted_items = [{'path': p, 'size': s, 'size_gb': round(s / (1024**3), 2)} for p, s in items]
             update_scan_results(
-                items=[{'path': p, 'size': s} for p, s in items],
+                items=formatted_items,
                 status='complete',
                 end_time=time.time()
             )

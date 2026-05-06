@@ -178,7 +178,7 @@ class GridScanner:
             mem_workers = cpu_count * 4
         return min(cpu_count * 4, mem_workers, 256)
 
-    def scan_grid(self):
+    def scan_grid(self, progress_callback=None):
         """Scan storage using grid-based parallel processing."""
         grid_cells = self.collect_grid_cells()
         total_cells = len(grid_cells)
@@ -201,7 +201,12 @@ class GridScanner:
                         elapsed = time.time() - self.start_time
                         with self.items_lock:
                             count = len(self.found_items)
+                        percent = int((completed[0] / total_cells) * 100) if total_cells > 0 else 0
                         print(f'[{self.format_time(elapsed)}] Progress: {completed[0]}/{total_cells} cells | Found: {count}')
+                        
+                        # Call progress callback if provided
+                        if progress_callback:
+                            progress_callback(percent, self.current_scan_info[0], count)
                 except Exception as e:
                     self.scan_errors.append(('future', str(e)))
 
@@ -230,7 +235,7 @@ class GridScanner:
         Main scan method.
         
         Args:
-            progress_callback: Optional callback function(percent, message)
+            progress_callback: Optional callback function(percent, current_file, found_count)
             
         Returns:
             Sorted list of (path, size) tuples
@@ -240,7 +245,7 @@ class GridScanner:
         self.start_time = time.time()
 
         print('Starting scan...')
-        self.scan_grid()
+        self.scan_grid(progress_callback=progress_callback)
         self.scan_complete.set()
 
         elapsed = time.time() - self.start_time
