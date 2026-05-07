@@ -1,4 +1,4 @@
-# SysCan - System Storage Analyzer & Cleaner
+# SyScan - System Storage Analyzer & Cleaner
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/gyan4it/syscan)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -247,9 +247,9 @@ See [LICENSE](LICENSE) for details.
 ## 📧 **Contact & Feedback**
 
 - **GitHub Issues:** https://github.com/gyan4it/syscan/issues
-- **Email:** admin@systemchecking.com
+- **Email:** gyan4it@gmail.com
 - **Feedback Form:** Run `feedback_server.py` in `legacy/SysScan/`
 
 ---
 
-**Built with ❤️ for system administrators, developers, and anyone who hates running out of disk space.**
+**Built with ❤️ for system administrators, developers, and anyone who hates running out of disk space.** **Gyanendra Verma**
