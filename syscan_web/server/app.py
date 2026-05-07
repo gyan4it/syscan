@@ -3,7 +3,7 @@ Flask app factory for SysCan API server.
 Serves WebUI static files in production mode.
 """
 
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
 import os
 
