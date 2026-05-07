@@ -17,8 +17,8 @@ def create_app(config_name=None, serve_ui=True):
         static_folder=os.path.join(project_dir, 'webui', 'build', 'static'),
         template_folder=os.path.join(project_dir, 'webui', 'build'))
     
-    # Enable CORS for all routes
-    CORS(app)
+    # Enable CORS for all routes (allow CDN resources)
+    CORS(app, resources={r"/*": {"origins": "*"}})
     
     # Default configuration
     app.config.from_mapping(
