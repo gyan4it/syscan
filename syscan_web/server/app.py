@@ -37,6 +37,15 @@ def create_app(config_name=None, serve_ui=True):
     
     # Serve WebUI static files (production mode)
     if serve_ui and os.path.exists(os.path.join(project_dir, 'webui', 'build', 'index.html')):
+        @app.after_request
+        def add_header(response):
+            """Add cache-busting headers."""
+            if 'index.html' in request.path:
+                response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+                response.headers['Pragma'] = 'no-cache'
+                response.headers['Expires'] = '0'
+            return response
+            
         @app.route('/', defaults={'path': ''})
         @app.route('/<path:path>')
         def serve_ui(path):
