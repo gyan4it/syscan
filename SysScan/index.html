@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SysScan - Download</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .download-box {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 50px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .file-info {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .feature h3 {
+            margin-top: 0;
+            color: #444;
+        }
+        .docs-links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .docs-links a {
+            display: inline-block;
+            margin: 5px 10px 5px 0;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .docs-links a:hover {
+            background: #764ba2;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SysScan - Download Center</h1>
+        <p class="subtitle">Open-source system storage analyzer & cleaner</p>
+
+        <div class="download-box">
+            <h2>Latest Release</h2>
+            <p>Version: 1.0.0 (2026-05-06)</p>
+            <a href="SysScan_20260506_180128.zip" download class="download-btn">
+                ⬇️ Download SysScan ZIP (13.8 KB)
+            </a>
+            <div class="file-info">
+                Includes: system_cleaner.py, feedback_server.py, feedback.html, README.md, LICENSE, requirements.txt
+            </div>
+        </div>
+
+        <h2>Features</h2>
+        <div class="features">
+            <div class="feature">
+                <h3>⚡ Ultra-Fast Scanning</h3>
+                <p>Grid-based parallel processing scans 200GB in ~17 seconds using 16+ workers.</p>
+            </div>
+            <div class="feature">
+                <h3>🛡️ Safe Operations</h3>
+                <p>Dry-run mode, recycle bin support, exclusion system, and confirmation prompts.</p>
+            </div>
+            <div class="feature">
+                <h3>🎯 Smart Targeting</h3>
+                <p>Focuses on caches, logs, and uninstaller leftovers - not system files.</p>
+            </div>
+            <div class="feature">
+                <h3>📊 Detailed Reporting</h3>
+                <p>JSON reports, progress tracking, size breakdowns, and registry analysis.</p>
+            </div>
+        </div>
+
+        <div class="docs-links">
+            <h3>Documentation</h3>
+            <a href="README.md">README</a>
+            <a href="docs/ARCHITECTURE.md">Architecture</a>
+            <a href="docs/CONTRIBUTING.md">Contributing</a>
+            <a href="LICENSE">MIT License</a>
+            <a href="feedback.html">Feedback Form</a>
+        </div>
+
+        <div class="footer">
+            <p><strong>Contact:</strong> admin@systemchecking.com</p>
+            <p><strong>System Requirements:</strong> Windows 10/11, Python 3.8+, 8+ GB RAM recommended</p>
+            <p><strong>Quick Start:</strong> Extract ZIP → Run <code>python system_cleaner.py --dry-run</code></p>
+            <p>© 2026 SysScan Contributors - MIT License</p>
+        </div>
+    </div>
+</body>
+</html>
