@@ -1,4 +1,4 @@
-# SysCan - System Storage Analyzer & Cleaner
+# SyScan - System Storage Analyzer & Cleaner
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/gyan4it/syscan)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
