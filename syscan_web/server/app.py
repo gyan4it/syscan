@@ -9,9 +9,13 @@ import os
 
 def create_app(config_name=None, serve_ui=True):
     """Application factory pattern for Flask."""
+    # Get the absolute path to the server directory
+    server_dir = os.path.dirname(os.path.abspath(__file__))
+    project_dir = os.path.dirname(server_dir)
+    
     app = Flask(__name__, 
-        static_folder='../webui/build/static',
-        template_folder='../webui/build')
+        static_folder=os.path.join(project_dir, 'webui', 'build', 'static'),
+        template_folder=os.path.join(project_dir, 'webui', 'build'))
     
     # Enable CORS for all routes
     CORS(app)
@@ -32,14 +36,16 @@ def create_app(config_name=None, serve_ui=True):
     register_blueprints(app)
     
     # Serve WebUI static files (production mode)
-    if serve_ui and os.path.exists('../webui/build/index.html'):
+    if serve_ui and os.path.exists(os.path.join(project_dir, 'webui', 'build', 'index.html')):
         @app.route('/', defaults={'path': ''})
         @app.route('/<path:path>')
         def serve_ui(path):
-            if path != "" and os.path.exists(app.static_folder + '/' + path):
-                return send_from_directory(app.static_folder, path)
+            build_dir = os.path.join(project_dir, 'webui', 'build')
+            static_dir = os.path.join(build_dir, 'static')
+            if path != "" and os.path.exists(os.path.join(static_dir, path)):
+                return send_from_directory(static_dir, path)
             else:
-                return send_from_directory('../webui/build', 'index.html')
+                return send_from_directory(build_dir, 'index.html')
     
     # Health check endpoint
     @app.route('/health')

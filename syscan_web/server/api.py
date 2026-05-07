@@ -17,7 +17,8 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 # Rate limiter (initialized with app in create_app)
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
+    default_limits=["1000 per day", "1000 per hour"],  # Disabled for testing
+    storage_uri="memory://",  # Use memory storage
 )
 
 # Thread-safe storage for scan results using a lock

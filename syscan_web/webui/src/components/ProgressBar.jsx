@@ -33,7 +33,7 @@ function ProgressBar() {
     if (!isScanning && progress === 0) return null;
 
     return (
-        <div className="progress-bar">
+        <div className="progress-bar" data-testid="progress-bar">
             <div className="status-text">
                 {isScanning ? 'Scanning...' : 'Scan Complete!'}
             </div>

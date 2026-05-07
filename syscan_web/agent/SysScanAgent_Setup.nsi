@@ -26,7 +26,7 @@ Section "MainSection" Sec01
     SetOutPath "$INSTDIR"
     
     ; Copy main executable
-    File "SysScanAgent.exe"
+    File "SysCanAgent.exe"
     
     ; Copy dependencies (if any)
     ; File "..\venv\Lib\site-packages\..."

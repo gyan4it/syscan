@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 try:
     import socketio
 except ImportError:
-    print("ERROR: socketio-client not installed. Run: pip install socketio-client")
+    print("ERROR: python-socketio not installed. Run: pip install python-socketio")
     sys.exit(1)
 
 from syscan_web.agent.scanner import GridScanner
